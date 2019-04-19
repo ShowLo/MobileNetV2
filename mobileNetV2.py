@@ -2,6 +2,20 @@
 
 import torch.nn as nn
 
+def _ensure_divisible(number, divisor, min_value=None):
+    '''
+    确保number可以被divisor整除
+    Ensure that 'number' can be 'divisor' divisible
+    Ref:
+    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    '''
+    if min_value is None:
+        min_value = divisor
+    new_num = max(min_value, int(number + divisor / 2) // divisor * divisor)
+    if new_num < 0.9 * number:
+        new_num += divisor
+    return new_num
+
 class Bottleneck(nn.Module):
     '''
     The basic unit of MobileNetV2, including Linear Bottlenecks and Inverted Residuals
@@ -56,10 +70,11 @@ class MobileNetV2(nn.Module):
     '''
     
     '''
-    def __init__(self, class_num=1000, input_size=224, width_multiplier=1.0):
+    def __init__(self, classes_num=1000, input_size=224, width_multiplier=1.0):
         super(MobileNetV2, self).__init__()
         first_channel_num = 32
         last_channel_num = 1280
+        divisor = 8
         bottleneck_setting = [
             # 升维系数(expansion factor), 输出通道数(number of output channels), 重复次数(repeat times), 卷积步长(stride)
             # t, c, n, s
@@ -72,13 +87,63 @@ class MobileNetV2(nn.Module):
             [6, 320, 1, 1],
         ]
 
+        ########################################################################################################################
+        # 特征提取部分(feature extraction part)
         # 输入层(input layer)
-        first_channel_num = round(first_channel_num * width_multiplier)
-        last_channel_num = round(last_channel_num * width_multiplier)
-        # 按顺序加入各层网络(Join the layers of the network sequentially)
-        self.features_net = []
+        input_channel_num = _ensure_divisible(first_channel_num * width_multiplier, divisor)
+        last_channel_num = _ensure_divisible(last_channel_num * width_multiplier, divisor) if width_multiplier > 1 else last_channel_num
+        self.network = []
         first_layer = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=first_channel_num, kernel_size=3, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(first_channel_num),
+            nn.Conv2d(in_channels=3, out_channels=input_channel_num, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(input_channel_num),
             nn.ReLU6(inplace=True)
         )
+        self.network.append(first_layer)
+        # 多个bottleneck结构叠加(Overlay of multiple bottleneck structures)
+        # 按顺序加入各层网络(Join the layers of the network sequentially)
+        for t, c, n, s in bottleneck_setting:
+            output_channel_num = _ensure_divisible(c * width_multiplier, divisor)
+            for i in range(n):
+                if i == 0:
+                    # 每一个bottleneck的第一层做步长>=1的卷积操作(The first layer of each bottleneck performs the convolution with stride>=1)
+                    self.network.append(Bottleneck(in_channels_num=input_channel_num, out_channels_num=output_channel_num, stride=s, expansion_factor=t))
+                    output_channel_num = input_channel_num
+                else:
+                    # 每一个bottleneck的之后每一层的卷积操作步长均为1(The later layers of the bottleneck perform the convolution with stride=1)
+                    self.network.append(Bottleneck(in_channels_num=input_channel_num, out_channels_num=output_channel_num, stride=1, expansion_factor=t))
+        # 最后几层(the last several layers)
+        self.network.append(
+            nn.Sequential(
+                nn.Conv2d(in_channels=input_channel_num, out_channels=last_channel_num, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(output_channel_num),
+                nn.ReLU6(inplace=True)
+            )
+        )
+        self.network.append(
+            nn.AvgPool2d(kernel_size=input_size//32, stride=1)
+        )
+        self.network = nn.Sequential(*self.network)
+
+        ########################################################################################################################
+        # 分类部分(Classification part)
+        self.classifier = nn.Linear(last_channel_num, classes_num)
+
+        ########################################################################################################################
+        # 权重初始化(Initialize the weights)
+        self._initialize_weights()
+
+        def forward(self, x):
+            x = self.network(x)
+            x = x.view(x.size(0), -1)
+            x = self.classifier(x)
+            return x
+
+        def _initialize_weights(self):
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                    nn.init.kaiming_normal_(m.weight)
+                    if m.bias is not None:
+                        nn.init.constant_(m.bias, 0)
+                elif isinstance(m, nn.BatchNorm2d):
+                    nn.init.constant_(m.weight, 1)
+                    nn.init.constant_(m.bias, 0)
