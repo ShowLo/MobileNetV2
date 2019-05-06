@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
 
+'''
+MobileNetV2
+Ref: https://github.com/tonylins/pytorch-mobilenet-v2
+'''
+
 import torch.nn as nn
 
 def _ensure_divisible(number, divisor, min_value=None):
@@ -24,6 +29,7 @@ class Bottleneck(nn.Module):
         '''
         根据输入通道数、输出通道数、卷积步长、升维系数初始化线性瓶颈单元及反向残差结构
         '''
+        super(Bottleneck, self).__init__()
         # 深度卷积输入/输出的通道数(Number of channels for Depthwise Convolution input/output)
         DW_channels_num = round(in_channels_num * expansion_factor)
         # 是否使用残差结构(Whether to use residual structure or not)
@@ -38,13 +44,13 @@ class Bottleneck(nn.Module):
                 nn.ReLU6(inplace=True),
                 # 线性逐点卷积(Linear-PW)
                 nn.Conv2d(in_channels=in_channels_num, out_channels=out_channels_num, kernel_size=1, stride=1, padding=0, bias=False),
-                nn.BatchNorm2d(out_channels_num)
+                nn.BatchNorm2d(num_features=out_channels_num)
             )
         else:
             # 升维(With expansion)
             self.conv = nn.Sequential(
                 # 用于升维的逐点卷积(Pointwise Convolution for expansion)
-                nn.Conv2d(in_channels=in_channels_num, out_channels=DW_channels_num, kernel_size=1, stride=1, padding=0, bias=False)
+                nn.Conv2d(in_channels=in_channels_num, out_channels=DW_channels_num, kernel_size=1, stride=1, padding=0, bias=False),
                 nn.BatchNorm2d(num_features=DW_channels_num),
                 nn.ReLU6(inplace=True),
                 # 深度卷积(Depthwise Convolution)
@@ -53,7 +59,7 @@ class Bottleneck(nn.Module):
                 nn.ReLU6(inplace=True),
                 # 线性逐点卷积(Linear-PW)
                 nn.Conv2d(in_channels=DW_channels_num, out_channels=out_channels_num, kernel_size=1, stride=1, padding=0, bias=False),
-                nn.BatchNorm2d(out_channels_num)
+                nn.BatchNorm2d(num_features=out_channels_num)
             )
 
     def forward(self, x):
@@ -95,7 +101,7 @@ class MobileNetV2(nn.Module):
         self.network = []
         first_layer = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=input_channel_num, kernel_size=3, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(input_channel_num),
+            nn.BatchNorm2d(num_features=input_channel_num),
             nn.ReLU6(inplace=True)
         )
         self.network.append(first_layer)
@@ -115,7 +121,7 @@ class MobileNetV2(nn.Module):
         self.network.append(
             nn.Sequential(
                 nn.Conv2d(in_channels=input_channel_num, out_channels=last_channel_num, kernel_size=1, stride=1, padding=0, bias=False),
-                nn.BatchNorm2d(output_channel_num),
+                nn.BatchNorm2d(num_features=output_channel_num),
                 nn.ReLU6(inplace=True)
             )
         )
@@ -132,18 +138,21 @@ class MobileNetV2(nn.Module):
         # 权重初始化(Initialize the weights)
         self._initialize_weights()
 
-        def forward(self, x):
-            x = self.network(x)
-            x = x.view(x.size(0), -1)
-            x = self.classifier(x)
-            return x
+    def forward(self, x):
+        x = self.network(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
 
-        def _initialize_weights(self):
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                    nn.init.kaiming_normal_(m.weight)
-                    if m.bias is not None:
-                        nn.init.constant_(m.bias, 0)
-                elif isinstance(m, nn.BatchNorm2d):
-                    nn.init.constant_(m.weight, 1)
+    def _initialize_weights(self):
+        '''
+        初始化权重
+        '''
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+                if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
