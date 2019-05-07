@@ -113,7 +113,7 @@ class MobileNetV2(nn.Module):
                 if i == 0:
                     # 每一个bottleneck的第一层做步长>=1的卷积操作(The first layer of each bottleneck performs the convolution with stride>=1)
                     self.network.append(Bottleneck(in_channels_num=input_channel_num, out_channels_num=output_channel_num, stride=s, expansion_factor=t))
-                    output_channel_num = input_channel_num
+                    input_channel_num = output_channel_num
                 else:
                     # 每一个bottleneck的之后每一层的卷积操作步长均为1(The later layers of the bottleneck perform the convolution with stride=1)
                     self.network.append(Bottleneck(in_channels_num=input_channel_num, out_channels_num=output_channel_num, stride=1, expansion_factor=t))
@@ -121,7 +121,7 @@ class MobileNetV2(nn.Module):
         self.network.append(
             nn.Sequential(
                 nn.Conv2d(in_channels=input_channel_num, out_channels=last_channel_num, kernel_size=1, stride=1, padding=0, bias=False),
-                nn.BatchNorm2d(num_features=output_channel_num),
+                nn.BatchNorm2d(num_features=last_channel_num),
                 nn.ReLU6(inplace=True)
             )
         )

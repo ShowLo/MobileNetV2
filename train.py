@@ -26,7 +26,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
-    device = torch.device('cuda:0' if use_gpu else 'cpu')
+    device = torch.device('cuda' if use_gpu else 'cpu')
 
     for epoch in range(args.start_epoch, num_epochs):
         # 每一个epoch中都有一个训练和一个验证过程(Each epoch has a training and validation phase)
@@ -101,13 +101,14 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='PyTorch implementation of MobileNetV2')
+    # 图片数据的根目录(Root catalog of images)
     parser.add_argument('--data-dir', type=str, default='/media/data2/chenjiarong/ImageData')
     parser.add_argument('--batch-size', type=int, default=16)
     parser.add_argument('--num-class', type=int, default=1000)
     parser.add_argument('--num-epochs', type=int, default=100)
     parser.add_argument('--lr', type=float, default=0.045)
     parser.add_argument('--num-workers', type=int, default=4)
-    parser.add_argument('--gpus', type=str, default='0')
+    #parser.add_argument('--gpus', type=str, default='0')
     parser.add_argument('--print-freq', type=int, default=10)
     parser.add_argument('--save-epoch-freq', type=int, default=1)
     parser.add_argument('--save-path', type=str, default='output')
@@ -135,8 +136,10 @@ if __name__ == '__main__':
             print(("=> no checkpoint found at '{}'".format(args.resume)))
 
     if use_gpu:
-        model = model.cuda()
-        model = torch.nn.DataParallel(model, device_ids=[int(i) for i in args.gpus.strip().split(',')])
+        model = torch.nn.DataParallel(model)#, device_ids=[int(i) for i in args.gpus.strip().split(',')])
+        model.to(torch.device('cuda'))
+    else:
+        model.to(torch.device('cpu'))
 
     # 用交叉熵损失函数(define loss function)
     criterion = nn.CrossEntropyLoss()
