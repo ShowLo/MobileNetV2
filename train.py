@@ -70,7 +70,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
                 batch_loss = running_loss / ((i + 1) * args.batch_size)
                 batch_acc = running_corrects / ((i + 1) * args.batch_size)
 
-                if phase == 'train' and i % args.print_freq == 0:
+                if phase == 'train' and (i + 1) % args.print_freq == 0:
                     print('[Epoch {}/{}]-[batch:{}/{}] lr:{:.4f} {} Loss: {:.6f}  Acc: {:.4f}  Time: {:.4f} sec/batch'.format(
                           epoch, num_epochs - 1, i, round(dataset_sizes[phase]/args.batch_size)-1, scheduler.get_lr()[0], phase, batch_loss, batch_acc, (time.time()-tic_batch)/args.print_freq))
                     tic_batch = time.time()
@@ -109,9 +109,9 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.045)
     parser.add_argument('--num-workers', type=int, default=4)
     #parser.add_argument('--gpus', type=str, default='0')
-    parser.add_argument('--print-freq', type=int, default=10)
+    parser.add_argument('--print-freq', type=int, default=1000)
     parser.add_argument('--save-epoch-freq', type=int, default=1)
-    parser.add_argument('--save-path', type=str, default='output')
+    parser.add_argument('--save-path', type=str, default='/media/data2/chenjiarong/MobileNetV2/output')
     parser.add_argument('--resume', type=str, default='', help='For training from one checkpoint')
     parser.add_argument('--start-epoch', type=int, default=0, help='Corresponding to the epoch of resume')
     args = parser.parse_args()
