@@ -158,3 +158,4 @@ if __name__ == '__main__':
                         num_epochs=args.num_epochs,
                         dataset_sizes=dataset_sizes,
                         use_gpu=use_gpu)
+    torch.save(model.state_dict(), os.path.join(args.save_path, 'best_model_wts.pth'))
