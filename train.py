@@ -72,7 +72,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
 
                 if phase == 'train' and (i + 1) % args.print_freq == 0:
                     print('[Epoch {}/{}]-[batch:{}/{}] lr:{:.4f} {} Loss: {:.6f}  Acc: {:.4f}  Time: {:.4f} sec/batch'.format(
-                          epoch, num_epochs - 1, i + 1, round(dataset_sizes[phase]/args.batch_size), scheduler.get_lr()[0], phase, batch_loss, batch_acc, (time.time()-tic_batch)/args.print_freq))
+                          epoch + 1, num_epochs, i + 1, round(dataset_sizes[phase]/args.batch_size), scheduler.get_lr()[0], phase, batch_loss, batch_acc, (time.time()-tic_batch)/args.print_freq))
                     tic_batch = time.time()
 
             epoch_loss = running_loss / dataset_sizes[phase]
@@ -99,6 +99,9 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
     return model
 
 if __name__ == '__main__':
+
+    import warnings
+    warnings.filterwarnings('ignore')
 
     parser = argparse.ArgumentParser(description='PyTorch implementation of MobileNetV2')
     # 图片数据的根目录(Root catalog of images)
