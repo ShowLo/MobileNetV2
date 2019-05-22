@@ -38,7 +38,7 @@ CUDA_VISIBLE_DEVICES=0,1 python train.py --batch-size 128
 * Train from one checkpoint(for example, train from `epoch_4.pth.tar`, the `--start-epoch` parameter is corresponding to the epoch of the checkpoint):
 
 ```
-CUDA_VISIBLE_DEVICES=0,1 python train.py --batch-size 128 --resume output/epoch_4.pth.tar --start-epoch 4
+CUDA_VISIBLE_DEVICES=1,4 python train.py --batch-size 128 --resume /media/data2/chenjiarong/MobileNetV2/output/epoch_49.pth.tar --start-epoch 50
 ```
 
 ## Pretrained models
