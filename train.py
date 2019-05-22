@@ -79,6 +79,8 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+            with open(os.path.join(args.save_path, 'result.txt'), 'a') as f:
+                f.write('Epoch:{}/{} {} Loss: {:.4f} Acc: {:.4f} \n'.format(epoch + 1, num_epochs, phase, epoch_loss, epoch_acc))
 
         if (epoch+1) % args.save_epoch_freq == 0:
             if not os.path.exists(args.save_path):
