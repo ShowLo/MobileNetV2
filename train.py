@@ -85,7 +85,8 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs, datase
         if (epoch+1) % args.save_epoch_freq == 0:
             if not os.path.exists(args.save_path):
                 os.makedirs(args.save_path)
-            torch.save(model, os.path.join(args.save_path, "epoch_" + str(epoch) + ".pth.tar"))
+            # torch.save(model, os.path.join(args.save_path, "epoch_" + str(epoch) + ".pth.tar"))
+            torch.save(model.state_dict(), os.path.join(args.save_path, "epoch_" + str(epoch + 1) + ".pth"))
         
         # 深拷贝模型(deep copy the model)
         if phase == 'val' and epoch_acc > best_acc:
@@ -134,9 +135,7 @@ if __name__ == '__main__':
     if args.resume:
         if os.path.isfile(args.resume):
             print(("=> loading checkpoint '{}'".format(args.resume)))
-            checkpoint = torch.load(args.resume)
-            base_dict = {'.'.join(k.split('.')[1:]): v for k, v in list(checkpoint.state_dict().items())}
-            model.load_state_dict(base_dict)
+            model.load_state_dict(torch.load(args.resume))
         else:
             print(("=> no checkpoint found at '{}'".format(args.resume)))
 
