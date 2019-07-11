@@ -132,18 +132,18 @@ if __name__ == '__main__':
     # get model
     model = MobileNetV2(classes_num=args.num_class)
 
+    if use_gpu:
+        model = torch.nn.DataParallel(model)#, device_ids=[int(i) for i in args.gpus.strip().split(',')])
+        model.to(torch.device('cuda'))
+    else:
+        model.to(torch.device('cpu'))
+
     if args.resume:
         if os.path.isfile(args.resume):
             print(("=> loading checkpoint '{}'".format(args.resume)))
             model.load_state_dict(torch.load(args.resume))
         else:
             print(("=> no checkpoint found at '{}'".format(args.resume)))
-
-    if use_gpu:
-        model = torch.nn.DataParallel(model)#, device_ids=[int(i) for i in args.gpus.strip().split(',')])
-        model.to(torch.device('cuda'))
-    else:
-        model.to(torch.device('cpu'))
 
     # 用交叉熵损失函数(define loss function)
     criterion = nn.CrossEntropyLoss()
