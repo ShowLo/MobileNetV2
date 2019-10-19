@@ -149,8 +149,8 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
 
     # 随机梯度下降(Observe that all parameters are being optimized)
-    # optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.00004)
-    optimizer_ft = optim.RMSprop(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.00004)
+    optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.00004)
+    # optimizer_ft = optim.RMSprop(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.00004)
 
     # Decay LR by a factor of 0.98 every 1 epoch
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=1, gamma=0.98)
