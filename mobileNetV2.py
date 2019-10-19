@@ -156,3 +156,16 @@ class MobileNetV2(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
+
+if __name__ == '__main__':
+    model = MobileNetV2()
+    model.eval()
+    import torch
+    input = torch.randn(1, 3, 224, 224)
+    from thop import profile
+    FLOPs, params = profile(model, inputs=(input,))
+
+    print()
+    print('MobileNetV2:')
+    print('Total flops: %.2fM' % (FLOPs/1000000.0))
+    print('Total params: %.2fM' % (params/1000000.0))
