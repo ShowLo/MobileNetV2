@@ -16,15 +16,15 @@ Implementation of MobileNetV2 with pyTorch, adapted from [MobileNetV2-PyTorch](h
 ├── MobileNetV2.py # network of MobileNetV2
 ├── read_ImageNetData.py
 ├── ImageData
-	├── ILSVRC2012_img_train
-		├── n01440764
-		├──    ...
-		├── n15075141
-	├── ILSVRC2012_img_val
-	├── ILSVRC2012_dev_kit_t12
-		├── data
-			├── ILSVRC2012_validation_ground_truth.txt
-			├── meta.mat
+  ├── ILSVRC2012_img_train
+    ├── n01440764
+    ├──    ...
+    ├── n15075141
+  ├── ILSVRC2012_img_val
+  ├── ILSVRC2012_dev_kit_t12
+    ├── data
+      ├── ILSVRC2012_validation_ground_truth.txt
+      ├── meta.mat
 ```
 
 ## Train
@@ -35,7 +35,7 @@ Implementation of MobileNetV2 with pyTorch, adapted from [MobileNetV2-PyTorch](h
 CUDA_VISIBLE_DEVICES=0,1 python train.py --batch-size 128
 ```
 
-* Train from one checkpoint(for example, train from `epoch_200.pth.tar`, the `--start-epoch` parameter is corresponding to the epoch of the checkpoint):
+* Train from one checkpoint(for example, train from `epoch_200.pth`, the `--start-epoch` parameter is corresponding to the epoch of the checkpoint):
 
 ```
 CUDA_VISIBLE_DEVICES=2,3 python train.py --batch-size 256 --resume /media/data2/chenjiarong/MobileNetV2/output/epoch_200.pth --start-epoch 200 --num-epochs 300
@@ -43,8 +43,21 @@ CUDA_VISIBLE_DEVICES=2,3 python train.py --batch-size 256 --resume /media/data2/
 
 ## Pretrained models
 
-&emsp;To be added...
+&emsp;In `pretrained`, achieving an accuracy of 71.62%.
 
 # Experiments
 
-&emsp;To be added...
+## training setting:
+
+1. number of epochs: 400
+2. learning rate schedule: learning rate decay rate of 0.98 per epoch, initial lr=0.045
+3. weight decay: 4e-5
+4. remove dropout
+5. batch size: 256
+6. optimizer: SGD
+
+### MobileNetV3 large
+|              | Madds     | Parameters | Top1-acc  |
+| -----------  | --------- | ---------- | --------- | ----------------------------------------------------|
+| Offical 1.0  | 300 M     | 3.4  M     | 72.0%     |
+| Ours    1.0  | 328.78 M     | 3.5 M     | 71.62%     |
