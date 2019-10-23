@@ -58,7 +58,7 @@ CUDA_VISIBLE_DEVICES=2,3 python train.py --batch-size 256 --resume /media/data2/
 
 ### MobileNetV3 large
 |              | Madds     | Parameters | Top1-acc  |
-| -----------  | --------- | ---------- | --------- | ----------------------------------------------------|
+| -----------  | --------- | ---------- | --------- |
 | Offical 1.0  | 300 M     | 3.4  M     | 72.0%     |
-| Ours    1.0 (calculated by [thop](https://github.com/Lyken17/pytorch-OpCounter))  | 328.78 M     | 3.5 M     | 71.62%     |
-| Ours    1.0 (calculated by [torchsummaryX](https://github.com/nmhkahn/torchsummaryX))  | 300.79 M     | 3.5 M     | 71.62%     |
+| Ours    1.0 (Madds&Parameters calculated by [thop](https://github.com/Lyken17/pytorch-OpCounter)) | 328.78 M     | 3.5 M     | 71.62%     |
+| Ours    1.0 (Madds&Parameters calculated by [torchsummaryX](https://github.com/nmhkahn/torchsummaryX)) | 300.79 M     | 3.5 M     | 71.62%     |
