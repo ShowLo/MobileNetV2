@@ -169,3 +169,6 @@ if __name__ == '__main__':
     print('MobileNetV2:')
     print('Total flops: %.2fM' % (FLOPs/1000000.0))
     print('Total params: %.2fM' % (params/1000000.0))
+
+    from torchsummaryX import summary
+    summary(model, torch.zeros((1, 3, 224, 224)))
