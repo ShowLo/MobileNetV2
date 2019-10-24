@@ -56,7 +56,7 @@ CUDA_VISIBLE_DEVICES=2,3 python train.py --batch-size 256 --resume /media/data2/
 5. batch size: 256
 6. optimizer: SGD
 
-### MobileNetV3 large
+### MobileNetV2
 |              | Madds     | Parameters | Top1-acc  |
 | -----------  | --------- | ---------- | --------- |
 | Offical 1.0  | 300 M     | 3.4  M     | 72.0%     |
